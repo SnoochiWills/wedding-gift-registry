@@ -11,7 +11,7 @@ li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-conten
 li:last-child { border-bottom: none; }
 .taken { text-decoration: line-through; color: gray; }
 .available { color: green; }
-button { padding: 5px 10px; }
+button { padding: 5px 10px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -20,7 +20,7 @@ button { padding: 5px 10px; }
 <ul id="gift-list"></ul>
 
 <script>
-const apiUrl = "https://script.google.com/macros/s/AKfycbzato14HWjb1tlFHXaAZIsDSCiqVBemjj3fsdBBM7AiCSQ9jClY8DlkpZ5kxdCtOOvtCw/exec";
+const apiUrl = "https://script.google.com/macros/s/AKfycbxU0A7mue2Nikfl_v3z-NL-I7g5h4ftqYW2XPdfASAunNmKIzj5u8myJI07Kez9HeWfzg/exec";
 const giftList = document.getElementById("gift-list");
 
 // Preload gifts so page isn’t empty
@@ -62,7 +62,7 @@ async function loadGifts() {
         li.classList.add("available");
         const btn = document.createElement("button");
         btn.textContent = "Reserve";
-        btn.onclick = () => reserveGift(i + 2, gift);
+        btn.onclick = () => reserveGift(i + 2, gift); // +2 because header row skipped & sheet rows are 1-indexed
         li.appendChild(btn);
       }
 
