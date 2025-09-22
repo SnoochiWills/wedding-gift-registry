@@ -19,17 +19,17 @@ button { padding: 5px 10px; }
 <ul id="gift-list"></ul>
 
 <script>
-const apiUrl = "https://script.google.com/macros/s/AKfycbzj9Kcg3bKmsHujxei3a92C3zlKCGM_-RpN_0w6UwiJzqyVbO-v74XglA75A4GdiC-e_w/exec";
+const apiUrl = "https://script.google.com/macros/s/AKfycbyRlniqJFYYPSOzTir3wpYBN83JtY0EgLHZIv9w6W-q6E0dM8mUtzvOWWhFCJeJGcwzkA/exec";
 const giftList = document.getElementById("gift-list");
 
 async function loadGifts() {
   try {
     const res = await fetch(apiUrl);
-    const data = await res.json();
+    const data = await res.json(); // data from Apps Script
 
     giftList.innerHTML = "";
 
-    data.slice(1).forEach((row, i) => {
+    data.slice(1).forEach((row, i) => { // skip header row
       const [gift, status, reservedBy] = row;
       if (!gift) return;
 
@@ -64,7 +64,7 @@ async function reserveGift(rowIndex, giftName) {
       method: 'POST',
       body: JSON.stringify({ rowIndex, name })
     });
-    loadGifts();
+    loadGifts(); // reload list after reservation
   } catch (err) {
     alert("Error reserving gift: " + err);
   }
@@ -73,7 +73,7 @@ async function reserveGift(rowIndex, giftName) {
 // Initial load
 loadGifts();
 
-// Refresh every 10 seconds for live updates
+// Refresh every 10 seconds
 setInterval(loadGifts, 10000);
 </script>
 </body>
