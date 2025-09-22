@@ -20,20 +20,18 @@ button { padding: 5px 10px; }
 <ul id="gift-list"></ul>
 
 <script>
-const apiUrl = "https://script.google.com/macros/s/AKfycbyRlniqJFYYPSOzTir3wpYBN83JtY0EgLHZIv9w6W-q6E0dM8mUtzvOWWhFCJeJGcwzkA/exec";
+const apiUrl = "https://script.google.com/macros/s/AKfycbzato14HWjb1tlFHXaAZIsDSCiqVBemjj3fsdBBM7AiCSQ9jClY8DlkpZ5kxdCtOOvtCw/exec";
 const giftList = document.getElementById("gift-list");
 
-// Pre-load all gifts so page isn't empty on first load
+// Preload gifts so page isn’t empty
 const preloadedGifts = [
   "Stove","Fridge","Stainless Steel cutlery","Stainless Steel cookware","Airfryer",
   "Toaster","Kettle (cordless)","Dinner plate/s","Glasses","Tea set/s",
   "Coffee mugs","Stand mixer/Hand mixer","Blender","Deep fryer","Microwave",
   "Coffee Maker","Tray Cutlery","Pot Holders","Dish Organiser","Pan Organiser",
-  "Utensil Organiser",
-  "......."
+  "Utensil Organiser"
 ];
 
-// Display preloaded gifts instantly
 function showPreloaded() {
   giftList.innerHTML = "";
   preloadedGifts.forEach(gift => {
@@ -44,12 +42,10 @@ function showPreloaded() {
   });
 }
 
-// Load live gifts from Apps Script
 async function loadGifts() {
   try {
     const res = await fetch(apiUrl);
     const data = await res.json(); 
-
     giftList.innerHTML = "";
 
     data.slice(1).forEach((row, i) => { 
@@ -66,7 +62,7 @@ async function loadGifts() {
         li.classList.add("available");
         const btn = document.createElement("button");
         btn.textContent = "Reserve";
-        btn.onclick = () => reserveGift(i + 2, gift); 
+        btn.onclick = () => reserveGift(i + 2, gift);
         li.appendChild(btn);
       }
 
