@@ -10,6 +10,7 @@ ul { list-style: none; padding: 0; max-width: 500px; margin: 20px auto; backgrou
 li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
 li:last-child { border-bottom: none; }
 .taken { text-decoration: line-through; color: gray; }
+.available { color: green; }
 button { padding: 5px 10px; }
 </style>
 </head>
@@ -22,14 +23,36 @@ button { padding: 5px 10px; }
 const apiUrl = "https://script.google.com/macros/s/AKfycbyRlniqJFYYPSOzTir3wpYBN83JtY0EgLHZIv9w6W-q6E0dM8mUtzvOWWhFCJeJGcwzkA/exec";
 const giftList = document.getElementById("gift-list");
 
+// Pre-load all gifts so page isn't empty on first load
+const preloadedGifts = [
+  "Stove","Fridge","Stainless Steel cutlery","Stainless Steel cookware","Airfryer",
+  "Toaster","Kettle (cordless)","Dinner plate/s","Glasses","Tea set/s",
+  "Coffee mugs","Stand mixer/Hand mixer","Blender","Deep fryer","Microwave",
+  "Coffee Maker","Tray Cutlery","Pot Holders","Dish Organiser","Pan Organiser",
+  "Utensil Organiser",
+  "......."
+];
+
+// Display preloaded gifts instantly
+function showPreloaded() {
+  giftList.innerHTML = "";
+  preloadedGifts.forEach(gift => {
+    const li = document.createElement("li");
+    li.textContent = gift + " - Available";
+    li.classList.add("available");
+    giftList.appendChild(li);
+  });
+}
+
+// Load live gifts from Apps Script
 async function loadGifts() {
   try {
     const res = await fetch(apiUrl);
-    const data = await res.json(); // data from Apps Script
+    const data = await res.json(); 
 
     giftList.innerHTML = "";
 
-    data.slice(1).forEach((row, i) => { // skip header row
+    data.slice(1).forEach((row, i) => { 
       const [gift, status, reservedBy] = row;
       if (!gift) return;
 
@@ -40,9 +63,10 @@ async function loadGifts() {
         li.classList.add("taken");
         li.textContent += ` - Reserved by: ${reservedBy}`;
       } else {
+        li.classList.add("available");
         const btn = document.createElement("button");
         btn.textContent = "Reserve";
-        btn.onclick = () => reserveGift(i + 2, gift); // +2 to match sheet row index
+        btn.onclick = () => reserveGift(i + 2, gift); 
         li.appendChild(btn);
       }
 
@@ -51,7 +75,8 @@ async function loadGifts() {
 
   } catch (err) {
     console.error("Error loading gifts:", err);
-    giftList.innerHTML = "<li>Unable to load gifts. Please try again later.</li>";
+    giftList.innerHTML = "<li>Unable to load gifts. Showing preloaded list.</li>";
+    showPreloaded();
   }
 }
 
@@ -64,13 +89,16 @@ async function reserveGift(rowIndex, giftName) {
       method: 'POST',
       body: JSON.stringify({ rowIndex, name })
     });
-    loadGifts(); // reload list after reservation
+    loadGifts(); 
   } catch (err) {
     alert("Error reserving gift: " + err);
   }
 }
 
-// Initial load
+// Show preloaded list instantly
+showPreloaded();
+
+// Then load live gifts
 loadGifts();
 
 // Refresh every 10 seconds
