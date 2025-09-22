@@ -22,56 +22,27 @@ button { padding: 5px 10px; }
 const apiUrl = "https://script.google.com/macros/s/AKfycbz7D2n8RdpkJT2eC32toFJVgMU7BzETwhQp3DdER4Y99uyS7fy1Wlr7kYY5H_0k_KDoCA/exec";
 const giftList = document.getElementById("gift-list");
 
-// Predefined gift list in case sheet is not yet updated
-const gifts = [
-  "Stove",
-  "Fridge",
-  "Stainless Steel cutlery",
-  "Stainless Steel cookware",
-  "Airfryer",
-  "Toaster",
-  "Kettle (cordless)",
-  "Dinner plate/s",
-  "Glasses",
-  "Tea set/s",
-  "Coffee mugs",
-  "Stand mixer/Hand mixer",
-  "Blender",
-  "Deep fryer",
-  "Microwave",
-  "Coffee Maker",
-  "Tray Cultery",
-  "Pot Holders",
-  "Dish Organiser",
-  "Pan Organiser",
-  "Utensil Organiser"
-];
-
 async function loadGifts() {
   try {
     const res = await fetch(apiUrl);
-    const data = await res.json();
+    const data = await res.json(); // data from Apps Script
+
     giftList.innerHTML = "";
 
-    // Map sheet data for faster lookup: gift -> {status, reservedBy}
-    const sheetData = {};
-    data.slice(1).forEach(row => {
+    data.slice(1).forEach((row, i) => { // skip header row
       const [gift, status, reservedBy] = row;
-      if (gift) sheetData[gift.trim()] = { status: status?.trim(), reservedBy: reservedBy?.trim() };
-    });
+      if (!gift) return;
 
-    gifts.forEach((gift, i) => {
       const li = document.createElement("li");
-      const sheetGift = sheetData[gift] || {};
       li.textContent = gift;
 
-      if (sheetGift.status && sheetGift.status.toLowerCase() === "taken") {
+      if (status && status.toLowerCase() === "taken") {
         li.classList.add("taken");
-        li.textContent += ` - Reserved by: ${sheetGift.reservedBy}`;
+        li.textContent += ` - Reserved by: ${reservedBy}`;
       } else {
         const btn = document.createElement("button");
         btn.textContent = "Reserve";
-        btn.onclick = () => reserveGift(i + 2, gift); // +2 to match sheet row
+        btn.onclick = () => reserveGift(i + 2, gift); // +2 for row index in sheet
         li.appendChild(btn);
       }
 
@@ -102,7 +73,7 @@ async function reserveGift(rowIndex, giftName) {
 // Initial load
 loadGifts();
 
-// Refresh every 10 seconds to show live updates
+// Optional: auto-refresh every 10 seconds
 setInterval(loadGifts, 10000);
 </script>
 </body>
