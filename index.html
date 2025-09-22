@@ -1,72 +1,92 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wedding Gift Registry</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f7;
+      background: #f9f9f9;
       padding: 20px;
-      text-align: center;
     }
-    h1 {
-      color: #444;
+    h1 { text-align: center; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+      gap: 12px;
+      margin-top: 20px;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-      max-width: 400px;
-      margin: 20px auto;
+    .card {
       background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    li {
       padding: 12px;
-      border-bottom: 1px solid #eee;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
-    li:last-child {
-      border-bottom: none;
+    .title { font-weight: bold; margin-bottom: 5px; }
+    .status { font-size: 14px; margin-bottom: 10px; }
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    .taken {
-      text-decoration: line-through;
-      color: gray;
-    }
+    .reserve { background: #0b74de; color: #fff; }
+    .taken { background: #ddd; color: #333; cursor: not-allowed; }
   </style>
 </head>
 <body>
   <h1>Wedding Gift Registry</h1>
-  <p>Please choose from the list below. Items marked as <em>taken</em> are already reserved.</p>
-  <ul id="gift-list"></ul>
+  <p style="text-align:center;color:#555;">
+    Please choose a gift to reserve. Once you reserve, others will see it as taken.
+  </p>
+  <div id="list" class="grid"></div>
 
   <script>
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNW91qqEm48Avq1vLyPVb0SLmkU-UyFZgDQOMdBDgxwXdOM_NV_Bld7bD2RmnaNs3M0gXXETzMfmnK/pub?output=csv";
+    // Replace this with your Google Apps Script URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxAkHa9790bHidlH3ccjvrsnvKjGlplO3IbNHO922V4ygWvwepuRUGDCTHwYjn7t2PmtQ/exec";
+
+    async function fetchGifts() {
+      const res = await fetch(API_URL);
+      return res.json();
+    }
+
+    async function reserveGift(giftName) {
+      const name = prompt("Enter your name so others know who reserved this gift:") || "";
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ gift: giftName, name }),
+        headers: { "Content-Type": "application/json" }
+      });
+      loadGifts();
+    }
 
     async function loadGifts() {
-      try {
-        const response = await fetch(sheetUrl);
-        const data = await response.text();
-        const rows = data.split("\n").map(r => r.split(","));
-        
-        const giftList = document.getElementById("gift-list");
-        giftList.innerHTML = "";
-
-        // Skip the header row (Gift, Status)
-        rows.slice(1).forEach(row => {
-          const [gift, status] = row;
-          if (gift) {
-            const li = document.createElement("li");
-            li.textContent = gift.trim();
-            if (status && status.trim().toLowerCase() === "taken") {
-              li.classList.add("taken");
-            }
-            giftList.appendChild(li);
-          }
-        });
-      } catch (error) {
-        console.error("Error loading gifts:", error);
-      }
+      const list = document.getElementById("list");
+      list.innerHTML = "<p>Loading...</p>";
+      const gifts = await fetchGifts();
+      list.innerHTML = "";
+      gifts.forEach(g => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="title">${g.gift}</div>
+          <div class="status">${g.status}${g.reservedBy ? " by " + g.reservedBy : ""}</div>
+        `;
+        const btn = document.createElement("button");
+        if (g.status === "Available") {
+          btn.textContent = "Reserve";
+          btn.className = "reserve";
+          btn.onclick = () => reserveGift(g.gift);
+        } else {
+          btn.textContent = "Taken";
+          btn.className = "taken";
+          btn.disabled = true;
+        }
+        card.appendChild(btn);
+        list.appendChild(card);
+      });
     }
 
     loadGifts();
